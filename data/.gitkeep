@@ -1,0 +1,9 @@
+# Place your Crop_recommendation.csv file in this directory.
+#
+# The dataset should contain these columns:
+#   N, P, K, temperature, humidity, ph, rainfall, label
+#
+# Source: https://www.kaggle.com/datasets/atharvaingle/crop-recommendation-dataset
+#
+# After placing the CSV here, run:
+#   python train_model.py

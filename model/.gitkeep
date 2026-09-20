@@ -1,0 +1,6 @@
+# This directory stores the trained ML model (crop_model.pkl).
+# 
+# After placing your dataset in data/Crop_recommendation.csv,
+# run:  python train_model.py
+#
+# The file  model/crop_model.pkl  will be created automatically.

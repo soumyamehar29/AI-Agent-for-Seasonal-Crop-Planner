@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Agent for Seasonal Crop Planning</title>
+  <meta name="description" content="AI-assisted decision support system for seasonal crop selection based on soil nutrients, weather conditions, and agricultural knowledge." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+
+<body>
+  <!-- ═══════════════════════════════════════════════
+       HEADER / NAVIGATION
+  ═══════════════════════════════════════════════ -->
+  <header class="header" id="header">
+    <div class="container header__inner">
+      <div class="header__brand">
+        <div class="header__logo">🌾</div>
+        <div class="header__text">
+          <span class="header__title">CropAI</span>
+          <span class="header__tagline">Seasonal Crop Planning</span>
+        </div>
+      </div>
+      <nav class="header__nav" id="nav">
+        <a href="#home"    class="nav__link active" data-section="home">Home</a>
+        <a href="#planner" class="nav__link"         data-section="planner">Crop Planner</a>
+        <a href="#results" class="nav__link"         data-section="results">Results</a>
+        <a href="#about"   class="nav__link"         data-section="about">About</a>
+      </nav>
+      <button class="header__menu-btn" id="menuBtn" aria-label="Toggle menu">☰</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ═══════════════════════════════════════════════
+         SECTION 1: HOME / HERO
+    ═══════════════════════════════════════════════ -->
+    <section class="hero" id="home">
+      <div class="hero__bg-pattern"></div>
+      <div class="container hero__inner">
+        <div class="hero__badge animate-fade-in">
+          <span class="badge">🤖 AI-Powered Decision Support</span>
+        </div>
+        <h1 class="hero__title animate-fade-in">
+          AI Agent for<br />
+          <span class="gradient-text">Seasonal Crop Planning</span>
+        </h1>
+        <p class="hero__subtitle animate-fade-in">
+          AI-assisted decision support for selecting crops based on soil nutrients,
+          weather conditions, and seasonal knowledge. Built with Machine Learning
+          and agricultural reasoning.
+        </p>
+        <div class="hero__cta animate-fade-in">
+          <a href="#planner" class="btn btn--primary btn--lg" id="heroStartBtn">
+            🌱 Start Crop Planning
+          </a>
+          <a href="#about" class="btn btn--ghost btn--lg">Learn More</a>
+        </div>
+
+
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         SECTION 2: CROP PLANNER FORM
+    ═══════════════════════════════════════════════ -->
+    <section class="planner" id="planner">
+      <div class="container">
+        <div class="section__header">
+          <span class="section__eyebrow">Step 1</span>
+          <h2 class="section__title">Crop Planner</h2>
+          <p class="section__desc">Enter your farm's soil, weather, and resource conditions to receive AI-assisted crop recommendations.</p>
+        </div>
+
+        <!-- System status hidden (kept in DOM for JS health check, not displayed) -->
+        <div class="status-banner hidden" id="systemStatus">
+          <div class="status-banner__dot"></div>
+          <span id="systemStatusText">Checking system status…</span>
+        </div>
+
+        <form class="planner-form" id="plannerForm" novalidate>
+          <!-- ── Row 1: Location + Season ── -->
+          <div class="form-grid form-grid--2">
+            <div class="form-group">
+              <label class="form-label" for="location">
+                📍 Location
+              </label>
+              <div style="display: flex; gap: 8px;">
+                <input
+                  type="text"
+                  id="location"
+                  name="location"
+                  class="form-input"
+                  placeholder="e.g. Nagpur, Maharashtra"
+                  maxlength="200"
+                />
+                <button type="button" class="btn btn--secondary" id="fetchWeatherBtn" style="white-space: nowrap; padding: 0.6rem 0.9rem; font-size: 0.82rem;" title="Fetch real-time weather via OpenWeatherMap API">
+                  🌦 Fetch Weather
+                </button>
+              </div>
+              <span class="form-hint" id="weatherHint">Enter city/state & click "Fetch Weather" to auto-fill temp & humidity (OpenWeatherMap API)</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label required" for="season">
+                🗓 Season
+              </label>
+              <select id="season" name="season" class="form-input form-select" required>
+                <option value="">— Select Season —</option>
+                <option value="Kharif">Kharif (Monsoon, Jun–Oct)</option>
+                <option value="Rabi">Rabi (Winter, Oct–Mar)</option>
+                <option value="Zaid">Zaid (Summer, Mar–Jun)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- ── Row 2: Soil Nutrients ── -->
+          <div class="form-section-title">🧪 Soil Nutrients (kg/ha)</div>
+          <div class="form-grid form-grid--3">
+            <div class="form-group">
+              <label class="form-label required" for="nitrogen">Nitrogen (N)</label>
+              <input type="number" id="nitrogen" name="N" class="form-input"
+                     placeholder="e.g. 90" min="0" max="300" step="1" required />
+              <span class="form-hint">0 – 300 kg/ha</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label required" for="phosphorus">Phosphorus (P)</label>
+              <input type="number" id="phosphorus" name="P" class="form-input"
+                     placeholder="e.g. 40" min="0" max="300" step="1" required />
+              <span class="form-hint">0 – 300 kg/ha</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label required" for="potassium">Potassium (K)</label>
+              <input type="number" id="potassium" name="K" class="form-input"
+                     placeholder="e.g. 40" min="0" max="300" step="1" required />
+              <span class="form-hint">0 – 300 kg/ha</span>
+            </div>
+          </div>
+
+          <!-- ── Row 3: Soil pH ── -->
+          <div class="form-grid form-grid--2">
+            <div class="form-group">
+              <label class="form-label required" for="ph">Soil pH</label>
+              <input type="number" id="ph" name="ph" class="form-input"
+                     placeholder="e.g. 6.5" min="0" max="14" step="0.1" required />
+              <span class="form-hint">0 – 14</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label required" for="landArea">🌾 Land Area (acres)</label>
+              <input type="number" id="landArea" name="land_area" class="form-input"
+                     placeholder="e.g. 2" min="0.01" max="10000" step="0.01" required />
+              <span class="form-hint">Minimum 0.01 acres</span>
+            </div>
+          </div>
+
+          <!-- ── Row 4: Weather ── -->
+          <div class="form-section-title">☁ Weather Conditions</div>
+          <div class="form-grid form-grid--3">
+            <div class="form-group">
+              <label class="form-label required" for="temperature">Temperature (°C)</label>
+              <input type="number" id="temperature" name="temperature" class="form-input"
+                     placeholder="e.g. 25" min="-10" max="55" step="0.1" required />
+              <span class="form-hint">-10 to 55 °C</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label required" for="humidity">Humidity (%)</label>
+              <input type="number" id="humidity" name="humidity" class="form-input"
+                     placeholder="e.g. 80" min="0" max="100" step="1" required />
+              <span class="form-hint">0 – 100 %</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label required" for="rainfall">Rainfall (mm)</label>
+              <input type="number" id="rainfall" name="rainfall" class="form-input"
+                     placeholder="e.g. 1000" min="0" max="5000" step="1" required />
+              <span class="form-hint">Annual/seasonal rainfall</span>
+            </div>
+          </div>
+
+          <!-- ── Row 5: Water Availability ── -->
+          <div class="form-section-title">💧 Water Availability</div>
+          <div class="water-options" id="waterOptions">
+            <label class="water-option" for="waterLow">
+              <input type="radio" id="waterLow" name="water_availability" value="Low" />
+              <div class="water-option__card">
+                <span class="water-option__icon">💧</span>
+                <span class="water-option__label">Low</span>
+                <span class="water-option__desc">Rainfed / scarce irrigation</span>
+              </div>
+            </label>
+            <label class="water-option" for="waterMed">
+              <input type="radio" id="waterMed" name="water_availability" value="Medium" checked />
+              <div class="water-option__card">
+                <span class="water-option__icon">💧💧</span>
+                <span class="water-option__label">Medium</span>
+                <span class="water-option__desc">Partial irrigation available</span>
+              </div>
+            </label>
+            <label class="water-option" for="waterHigh">
+              <input type="radio" id="waterHigh" name="water_availability" value="High" />
+              <div class="water-option__card">
+                <span class="water-option__icon">💧💧💧</span>
+                <span class="water-option__label">High</span>
+                <span class="water-option__desc">Full irrigation / canal access</span>
+              </div>
+            </label>
+          </div>
+
+          <!-- Validation errors -->
+          <div class="form-errors hidden" id="formErrors"></div>
+
+          <!-- Submit -->
+          <div class="form-submit">
+            <button type="submit" class="btn btn--primary btn--xl btn--full" id="submitBtn">
+              <span class="btn__icon">🌱</span>
+              <span class="btn__text">Generate Crop Plan</span>
+              <span class="btn__loader hidden" id="submitLoader"></span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         SECTION 3: RESULTS
+    ═══════════════════════════════════════════════ -->
+    <section class="results hidden" id="results">
+      <div class="container">
+        <div class="section__header">
+          <span class="section__eyebrow">Step 2</span>
+          <h2 class="section__title">Crop Plan Results</h2>
+          <p class="section__desc" id="resultLocation"></p>
+        </div>
+
+        <!-- ── Disclaimer ── -->
+        <div class="disclaimer-banner">
+          ⚠ <strong>Important:</strong> This is an AI-assisted decision-support tool.
+          Results reflect model-derived suitability scores, not guaranteed agricultural outcomes.
+          Always consult qualified agricultural experts for final decisions.
+        </div>
+
+        <!-- ── Top Recommendation Card ── -->
+        <div class="top-rec-card" id="topRecCard">
+          <div class="top-rec-card__left">
+            <div class="top-rec-card__icon" id="topCropIcon">🌾</div>
+            <div class="top-rec-card__info">
+              <span class="top-rec-card__label">Top Recommended Crop</span>
+              <h3 class="top-rec-card__crop" id="topCropName">—</h3>
+              <span class="top-rec-card__sub" id="topCropSeason">—</span>
+            </div>
+          </div>
+          <div class="top-rec-card__scores">
+            <div class="score-circle" id="modelScoreCircle">
+              <svg viewBox="0 0 100 100" class="score-circle__svg">
+                <circle class="score-circle__bg" cx="50" cy="50" r="42" />
+                <circle class="score-circle__fill" id="scoreArc" cx="50" cy="50" r="42"
+                        stroke-dasharray="0 264" />
+              </svg>
+              <div class="score-circle__text">
+                <span class="score-circle__value" id="modelScoreVal">—</span>
+                <span class="score-circle__label">Model Score</span>
+              </div>
+            </div>
+            <div class="score-pill" id="finalScorePill">
+              <span>Combined Score</span>
+              <strong id="finalScoreVal">—</strong>
+              <span>/100</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Dashboard Summary Cards ── -->
+        <div class="summary-cards" id="summaryCards">
+          <div class="summary-card">
+            <div class="summary-card__icon">🗓</div>
+            <div class="summary-card__label">Season</div>
+            <div class="summary-card__value" id="sumSeason">—</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-card__icon">💧</div>
+            <div class="summary-card__label">Water Req.</div>
+            <div class="summary-card__value" id="sumWater">—</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-card__icon">⏱</div>
+            <div class="summary-card__label">Duration</div>
+            <div class="summary-card__value" id="sumDuration">—</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-card__icon">🌾</div>
+            <div class="summary-card__label">Land Area</div>
+            <div class="summary-card__value" id="sumLand">—</div>
+          </div>
+        </div>
+
+        <!-- ── Charts Row ── -->
+        <div class="charts-row">
+          <div class="chart-card">
+            <h3 class="chart-card__title">📊 Top 5 Crop Suitability Scores</h3>
+            <p class="chart-card__sub">Model suitability score (%) per candidate crop</p>
+            <div class="chart-wrapper">
+              <canvas id="barChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h3 class="chart-card__title">🕸 Input Conditions Radar</h3>
+            <p class="chart-card__sub">Normalised environmental and soil parameters</p>
+            <div class="chart-wrapper">
+              <canvas id="radarChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Top 5 Table ── -->
+        <div class="results-panel">
+          <h3 class="results-panel__title">🌿 Top 5 Crop Recommendations</h3>
+          <div class="table-wrapper">
+            <table class="rec-table" id="recTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Crop</th>
+                  <th>Model Score</th>
+                  <th>Combined Score</th>
+                  <th>Location</th>
+                  <th>Season</th>
+                  <th>Water Req.</th>
+                  <th>Duration</th>
+                </tr>
+              </thead>
+              <tbody id="recTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── Crop Comparison Cards ── -->
+        <div class="results-panel">
+          <h3 class="results-panel__title">🔍 Crop Comparison</h3>
+          <div class="comparison-cards" id="comparisonCards"></div>
+        </div>
+
+        <!-- ── Location Suitability Panel ── -->
+        <div class="analysis-panel analysis-panel--wide" id="locationSuitabilityPanel" style="margin-bottom: 1.5rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 0.85rem;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.25rem;">🌍</span>
+              <h3 class="analysis-panel__title" style="margin-bottom: 0;">Location Suitability</h3>
+            </div>
+            <span class="badge" id="locationStatusBadge" style="font-size: 0.75rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">
+              Geographic Decision Layer Active
+            </span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1rem; padding: 0.9rem 1.1rem; background: rgba(255, 255, 255, 0.03); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08);">
+            <div>
+              <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; display: block; margin-bottom: 4px;">Location</span>
+              <strong id="locEntered" style="font-size: 0.95rem; color: #f8fafc;">—</strong>
+            </div>
+            <div>
+              <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; display: block; margin-bottom: 4px;">Regional Classification</span>
+              <strong id="locRegion" style="font-size: 0.95rem; color: #38bdf8;">—</strong>
+            </div>
+            <div>
+              <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; display: block; margin-bottom: 4px;">Top Crop Regional Match</span>
+              <strong id="locCropStatus" style="font-size: 0.95rem; color: #4ade80;">—</strong>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 0.75rem;">
+            <strong style="font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Location Analysis</strong>
+            <p id="locAnalysisText" class="analysis-text" style="margin-bottom: 0.5rem; color: #e2e8f0; line-height: 1.6;">—</p>
+          </div>
+
+          <div id="locCropReasonBox" style="font-size: 0.9rem; color: #f1f5f9; background: rgba(34, 197, 94, 0.08); padding: 0.75rem 1rem; border-left: 3px solid #22c55e; border-radius: 4px; margin-bottom: 0.9rem;">
+            <span id="locCropReason">—</span>
+          </div>
+
+          <!-- Model Limitation Notice -->
+          <div style="display: flex; align-items: flex-start; gap: 10px; font-size: 0.82rem; color: #94a3b8; background: rgba(148, 163, 184, 0.06); padding: 0.75rem 1rem; border-radius: 6px; border: 1px solid rgba(148, 163, 184, 0.15);">
+            <span style="font-size: 1.1rem; line-height: 1;">ℹ️</span>
+            <span style="line-height: 1.5;"><strong>Model Limitation Note:</strong> The machine-learning model predicts crops from soil and environmental variables. Geographic suitability is therefore handled separately through a rule-based regional knowledge layer. The final recommendation combines both components.</span>
+          </div>
+        </div>
+
+        <!-- ── Analysis Panels ── -->
+        <div class="analysis-grid">
+          <!-- Environmental Analysis -->
+          <div class="analysis-panel">
+            <h3 class="analysis-panel__title">🌡 Environmental Analysis</h3>
+            <div id="envAnalysis"></div>
+          </div>
+
+          <!-- Seasonal Analysis -->
+          <div class="analysis-panel">
+            <h3 class="analysis-panel__title">🗓 Seasonal Analysis</h3>
+            <p id="seasonAnalysis" class="analysis-text">—</p>
+            <div id="seasonInfo" class="season-info-box"></div>
+          </div>
+        </div>
+
+        <!-- Water Analysis -->
+        <div class="analysis-panel analysis-panel--wide" id="waterAnalysisPanel">
+          <h3 class="analysis-panel__title">💧 Water Analysis</h3>
+          <p id="waterAnalysis" class="analysis-text">—</p>
+        </div>
+
+        <!-- AI Advisory -->
+        <div class="advisory-panel" id="advisoryPanel">
+          <div class="advisory-panel__header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="advisory-panel__icon">🤖</span>
+              <h3 class="advisory-panel__title">AI Advisory</h3>
+            </div>
+            <span class="badge" id="advisoryBadge" style="font-size: 0.75rem; background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3);">
+              ⚡ Google Gemini & AI Decision Engine
+            </span>
+          </div>
+          <p id="advisoryText" class="advisory-panel__text">—</p>
+        </div>
+
+        <!-- Explainability -->
+        <div class="explain-panel" id="explainPanel">
+          <h3 class="explain-panel__title">
+            🔬 How did the AI Agent make this recommendation?
+          </h3>
+          <div class="explain-steps" id="explainSteps"></div>
+        </div>
+
+        <!-- Scroll back up -->
+        <div class="text-center mt-4">
+          <button class="btn btn--ghost" onclick="document.getElementById('planner').scrollIntoView({behavior:'smooth'})">
+            ← New Crop Plan
+          </button>
+        </div>
+
+      </div><!-- /container -->
+    </section>
+
+    <!-- About section removed per user request -->
+    <section class="about hidden" id="about">
+      <div class="container">
+        <div class="section__header">
+          <span class="section__eyebrow">About</span>
+          <h2 class="section__title">System Architecture</h2>
+          <p class="section__desc">How the AI Agent processes your farm inputs into crop recommendations.</p>
+        </div>
+
+        <div class="workflow-steps">
+          <div class="workflow-step">
+            <div class="workflow-step__num">1</div>
+            <div class="workflow-step__content">
+              <h4>Farmer Input</h4>
+              <p>Location, season, soil NPK, pH, weather parameters, water availability, and land area.</p>
+            </div>
+          </div>
+          <div class="workflow-arrow">↓</div>
+          <div class="workflow-step">
+            <div class="workflow-step__num">2</div>
+            <div class="workflow-step__content">
+              <h4>Input Validation</h4>
+              <p>All numeric values are range-checked. Missing or out-of-range values return friendly errors.</p>
+            </div>
+          </div>
+          <div class="workflow-arrow">↓</div>
+          <div class="workflow-step">
+            <div class="workflow-step__num">3</div>
+            <div class="workflow-step__content">
+              <h4>Environmental Analysis</h4>
+              <p>Temperature, humidity, rainfall, pH, and nutrients are evaluated against reference ranges.</p>
+            </div>
+          </div>
+          <div class="workflow-arrow">↓</div>
+          <div class="workflow-step">
+            <div class="workflow-step__num">4</div>
+            <div class="workflow-step__content">
+              <h4>ML Crop Prediction</h4>
+              <p>A trained Random Forest Classifier (200 estimators) scores all crops using predict_proba().</p>
+            </div>
+          </div>
+          <div class="workflow-arrow">↓</div>
+          <div class="workflow-step">
+            <div class="workflow-step__num">5</div>
+            <div class="workflow-step__content">
+              <h4>Seasonal & Water Analysis</h4>
+              <p>Seasonal suitability and water compatibility are checked from the crop knowledge base.</p>
+            </div>
+          </div>
+          <div class="workflow-arrow">↓</div>
+          <div class="workflow-step">
+            <div class="workflow-step__num">6</div>
+            <div class="workflow-step__content">
+              <h4>Decision Layer &amp; Ranking</h4>
+              <p>Combined score = ML 60% + Season 20% + Water 20%. Crops are ranked accordingly.</p>
+            </div>
+          </div>
+          <div class="workflow-arrow">↓</div>
+          <div class="workflow-step">
+            <div class="workflow-step__num">7</div>
+            <div class="workflow-step__content">
+              <h4>Explainable Recommendation</h4>
+              <p>A plain-language advisory and step-by-step explanation are generated.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tech Stack -->
+        <div class="tech-stack">
+          <h3 class="tech-stack__title">Technology Stack</h3>
+          <div class="tech-pills">
+            <span class="tech-pill">Python 3</span>
+            <span class="tech-pill">Flask</span>
+            <span class="tech-pill">Scikit-learn</span>
+            <span class="tech-pill">Random Forest</span>
+            <span class="tech-pill">Pandas</span>
+            <span class="tech-pill">NumPy</span>
+            <span class="tech-pill">joblib</span>
+            <span class="tech-pill">Chart.js</span>
+            <span class="tech-pill">HTML5 / CSS3 / JS</span>
+          </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer-panel">
+          <h4>📋 System Disclaimer</h4>
+          <p>
+            This system is an academic AI-assisted decision-support tool developed for crop planning
+            purposes. Model suitability scores reflect the output of a machine learning classifier
+            trained on a crop recommendation dataset. They should not be interpreted as guaranteed
+            probabilities of agricultural success. Seasonal and water compatibility assessments are
+            based on a general knowledge base and may not account for local micro-climatic conditions.
+            Always consult qualified agricultural experts and local extension services before making
+            farming decisions.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ─── FOOTER ─── -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <div class="footer__brand">
+        🌾 <strong>CropAI</strong> — AI Agent for Seasonal Crop Planning
+      </div>
+      <div class="footer__note">
+        Academic project · AI-assisted decision support · Not a substitute for expert agricultural advice
+      </div>
+    </div>
+  </footer>
+
+  <!-- Main JS -->
+  <script src="/static/js/script.js"></script>
+</body>
+</html>

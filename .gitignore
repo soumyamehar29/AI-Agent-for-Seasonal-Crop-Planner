@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Environment / Secrets (Keep API keys private)
+.env
+
+# Model weights
+# model/crop_model.pkl
+
+# IDE files
+.vscode/
+.idea/
+*.swp
